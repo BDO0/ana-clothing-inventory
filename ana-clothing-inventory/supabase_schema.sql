@@ -63,11 +63,17 @@ ALTER TABLE public.inventory_events ENABLE ROW LEVEL SECURITY;
 -- Open Read/Write Policies (For Development / Private Setup)
 CREATE POLICY "Allow anon read access on products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Allow anon insert access on products" ON public.products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anon update access on products" ON public.products FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon delete access on products" ON public.products FOR DELETE USING (true);
 
 CREATE POLICY "Allow anon read access on variants" ON public.variants FOR SELECT USING (true);
 CREATE POLICY "Allow anon insert access on variants" ON public.variants FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anon update access on variants" ON public.variants FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon delete access on variants" ON public.variants FOR DELETE USING (true);
 
 CREATE POLICY "Allow anon read access on inventory_events" ON public.inventory_events FOR SELECT USING (true);
 CREATE POLICY "Allow anon insert access on inventory_events" ON public.inventory_events FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anon update access on inventory_events" ON public.inventory_events FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon delete access on inventory_events" ON public.inventory_events FOR DELETE USING (true);
 
 -- End of schema

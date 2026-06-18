@@ -11,6 +11,13 @@ import type {
 } from "./models";
 import { assertValidEvent } from "./validators";
 
+// Lazy import to avoid circular dependency — only used for immediate sync trigger
+async function triggerSync(): Promise<void> {
+  if (!_supabaseConfigured) return;
+  const { syncEngine } = await import("../sync/sync-engine");
+  syncEngine.triggerImmediateSync().catch(() => {/* silent — periodic sync will retry */});
+}
+
 // Lazy check for Supabase config — set once at startup
 let _supabaseConfigured = false;
 export function setSupabaseConfigured(v: boolean): void {
@@ -116,7 +123,6 @@ export async function appendEvent(
   await db.inventory_events.add(fullEvent);
 
   // Only add to sync queue if Supabase is configured.
-  // Without cloud backup, queuing is pointless and fills IndexedDB.
   if (_supabaseConfigured) {
     await db.sync_queue.add({
       type: "EVENT",
@@ -125,6 +131,8 @@ export async function appendEvent(
       retries: 0,
       created_at: Date.now(),
     });
+    // Push to Supabase immediately instead of waiting for the 30s timer
+    triggerSync();
   }
 }
 
@@ -173,6 +181,7 @@ export async function addProduct(
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 
   return full.id;
@@ -200,6 +209,7 @@ export async function addVariant(
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 
   return full.id;
@@ -220,6 +230,7 @@ export async function updateProduct(id: string, updates: Partial<Omit<Product, "
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 }
 
@@ -239,11 +250,12 @@ export async function deleteProduct(id: string): Promise<void> {
   if (_supabaseConfigured) {
     await db.sync_queue.add({
       type: "PRODUCT_DELETE",
-      payload: id, // Just send the ID to delete
+      payload: id,
       status: "PENDING",
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 }
 
@@ -262,6 +274,7 @@ export async function updateVariant(id: string, updates: Partial<Omit<Variant, "
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 }
 
@@ -279,5 +292,6 @@ export async function deleteVariant(id: string): Promise<void> {
       retries: 0,
       created_at: Date.now(),
     });
+    triggerSync();
   }
 }

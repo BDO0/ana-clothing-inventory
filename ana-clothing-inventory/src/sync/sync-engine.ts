@@ -276,6 +276,17 @@ export class SyncEngine {
   }
 
   /**
+   * Immediately process the queue, bypassing the throttle timer.
+   * Call this right after any local write so data reaches Supabase quickly
+   * instead of waiting up to 30 seconds for the periodic timer.
+   */
+  async triggerImmediateSync(): Promise<void> {
+    // Reset the throttle timestamp so processQueue() won't skip
+    this.lastSyncTime = 0;
+    await this.processQueue();
+  }
+
+  /**
    * Start the sync engine: register triggers and run immediately.
    * Idempotent — calling start() multiple times is safe.
    */
