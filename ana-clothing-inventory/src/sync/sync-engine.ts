@@ -48,6 +48,7 @@ export class SyncEngine {
   private idleCallback: number | null = null;
   private running = false;
   private lastSyncTime = 0;
+  private _syncing = false; // mutex: only one processQueue at a time
 
   private constructor(config: SyncConfig = {}) {
     this.config = {
@@ -101,6 +102,12 @@ export class SyncEngine {
       return;
     }
 
+    // Mutex: prevent concurrent runs which cause FK race conditions
+    if (this._syncing) {
+      console.log("[Sync] Already syncing — skipping concurrent call");
+      return;
+    }
+
     // Throttle: prevent too-frequent calls from the periodic timer.
     // force=true bypasses this (used by triggerImmediateSync after a user write).
     const now = Date.now();
@@ -109,10 +116,19 @@ export class SyncEngine {
       return;
     }
 
+    this._syncing = true;
+    try {
+      await this._runQueue();
+    } finally {
+      this._syncing = false;
+      this.lastSyncTime = Date.now();
+    }
+  }
+
+  private async _runQueue(): Promise<void> {
     const pending = await getPendingItems();
     if (pending.length === 0) {
       console.log("[Sync] Queue is empty");
-      this.lastSyncTime = now;
       return;
     }
 
@@ -197,7 +213,6 @@ export class SyncEngine {
       }
     }
 
-    this.lastSyncTime = Date.now();
     console.log(`[Sync] Done — synced=${synced} failed=${failed}`);
   }
 
@@ -282,7 +297,16 @@ export class SyncEngine {
    * instead of waiting up to 30 seconds for the periodic timer.
    */
   async triggerImmediateSync(): Promise<void> {
-    // force=true skips the throttle check completely — no race condition possible
+    // If a sync is already running, wait for it to finish then run again
+    // so items queued during the current sync don't get dropped.
+    if (this._syncing) {
+      await new Promise<void>((resolve) => {
+        const check = setInterval(() => {
+          if (!this._syncing) { clearInterval(check); resolve(); }
+        }, 100);
+      });
+    }
+    // force=true skips the throttle check completely
     await this.processQueue(true);
   }
 

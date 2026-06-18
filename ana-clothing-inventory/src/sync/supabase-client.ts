@@ -31,11 +31,11 @@ export function classifyError(
   status: number,
   statusText: string
 ): SyncErrorType {
-  if (status === 0 || status === 429 || status >= 500) {
-    return "SERVER";
+  if (status === 0 || status === 409 || status === 429 || status >= 500) {
+    return "SERVER"; // 409 = conflict/duplicate — retryable
   }
   if (status === 400 || status === 422) {
-    return "VALIDATION";
+    return "VALIDATION"; // true data errors — won't retry
   }
   if (status >= 400 && status < 500) {
     return "UNKNOWN";
