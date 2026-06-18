@@ -12,6 +12,7 @@ import {
 import { getAllProducts, getVariantsByProduct, getAllVariants, getRecentEvents } from "../engine/queries"
 import { getEventHistory } from "../engine/stock-engine"
 import { db } from "../db/database"
+import { onSyncPulled } from "../sync/sync-events"
 import type { Product, Variant, InventoryEvent } from "../db/models"
 import Card from "../ui/components/Card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -44,6 +45,8 @@ export default function History() {
       setLoading(false)
     }
     init()
+    // Re-load whenever the sync engine pulls remote changes
+    return onSyncPulled(init)
   }, [])
 
   // Product selection handler

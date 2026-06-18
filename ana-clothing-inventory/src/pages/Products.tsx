@@ -4,6 +4,7 @@ import { Plus, ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { getAllProducts, getVariantsByProduct } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { createProduct, createVariant, editProduct, removeProduct, editVariant, removeVariant } from "../engine/product-service"
+import { onSyncPulled } from "../sync/sync-events"
 import type { Product, Variant } from "../db/models"
 import Card from "../ui/components/Card"
 import Modal from "../ui/components/Modal"
@@ -47,6 +48,8 @@ export default function Products() {
     setVData(initialVData)
   }
   useEffect(() => { loadProducts() }, [])
+  // Re-load whenever the sync engine pulls remote changes
+  useEffect(() => onSyncPulled(loadProducts), [])
 
   async function toggleExpand(id: string) {
     setExpanded((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })

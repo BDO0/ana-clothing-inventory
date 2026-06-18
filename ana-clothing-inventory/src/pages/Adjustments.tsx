@@ -4,6 +4,7 @@ import { SlidersHorizontal, Plus, Minus } from "lucide-react"
 import { getAllProducts, getVariantsByProduct } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { recordAdjustment } from "../engine/inventory-service"
+import { onSyncPulled } from "../sync/sync-events"
 import type { Product, Variant } from "../db/models"
 import Card from "../ui/components/Card"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,8 @@ export default function Adjustments() {
   const [errors, setErrors] = useState<{ qty?: string; variant?: string }>({})
 
   useEffect(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }, [])
+  // Re-load whenever the sync engine pulls remote changes
+  useEffect(() => onSyncPulled(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }), [])
 
   function onProductChange(id: string) {
     setPId(id); setVId(""); setCurrentStock(null); setErrors({})

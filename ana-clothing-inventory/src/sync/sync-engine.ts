@@ -24,6 +24,7 @@ import {
   type SupabaseResponse,
   type SyncConfig,
 } from "./supabase-client";
+import { dispatchSyncPulled } from "./sync-events";
 
 const MIN_SYNC_INTERVAL_MS = 10_000; // throttle: 10 seconds
 
@@ -201,6 +202,7 @@ export class SyncEngine {
 
   /**
    * Pull all data from Supabase if the local database is empty.
+   * Used only on first run — after that, pullFromCloud() handles sync.
    */
   async hydrate(): Promise<void> {
     if (!this.isConfigured() || !this.isOnline()) return;
@@ -208,7 +210,7 @@ export class SyncEngine {
     const { isDatabaseEmpty, hydrateDatabase } = await import("../db/database");
     const empty = await isDatabaseEmpty();
     if (!empty) {
-      return; // Only hydrate if fresh/empty
+      return; // Only hydrate if fresh/empty — otherwise use pullFromCloud()
     }
 
     console.log("[Sync] Local database is empty — hydrating from cloud...");
@@ -233,6 +235,38 @@ export class SyncEngine {
   }
 
   /**
+   * Pull latest data from Supabase and merge it into the local database.
+   * This is the KEY method that enables multi-device sync.
+   * It runs on startup, on network reconnect, and on every periodic tick.
+   * Uses mergeFromCloud() which upserts — it never wipes local data.
+   */
+  async pullFromCloud(): Promise<void> {
+    if (!this.isConfigured() || !this.isOnline()) return;
+
+    try {
+      const [productDTOs, variantDTOs, eventDTOs] = await Promise.all([
+        this.client.getProducts(),
+        this.client.getVariants(),
+        this.client.getEvents(),
+      ]);
+
+      const { mergeFromCloud } = await import("../db/database");
+      const products = productDTOs.map(fromProductDTO);
+      const variants = variantDTOs.map(fromVariantDTO);
+      const events = eventDTOs.map(fromEventDTO);
+
+      await mergeFromCloud(products, variants, events);
+
+      // Notify React pages to reload their data from IndexedDB
+      dispatchSyncPulled();
+
+      console.log(`[Sync] Pull complete: ${products.length} products, ${variants.length} variants, ${events.length} events`);
+    } catch (err) {
+      console.error("[Sync] Pull from cloud failed:", err);
+    }
+  }
+
+  /**
    * Full sync cycle: process queue + cleanup old synced items.
    */
   async sync(): Promise<void> {
@@ -249,37 +283,47 @@ export class SyncEngine {
     if (this.running) return;
     this.running = true;
 
-    // 1. Run on startup: hydrate first, then process any local queues
+    // 1. Run on startup: hydrate empty DB first, then pull remote changes,
+    //    then push any locally-pending queue items.
     this.hydrate().then(() => {
+      return this.pullFromCloud();
+    }).then(() => {
       this.processQueue();
     });
 
-    // 2. Internet reconnect trigger
+    // 2. Internet reconnect trigger — pull AND push when coming back online
     this.onlineHandler = () => {
-      console.log("[Sync] Network restored — running sync");
-      this.processQueue();
+      console.log("[Sync] Network restored — pulling remote changes then pushing local queue");
+      this.pullFromCloud().then(() => this.processQueue());
     };
 
     if (typeof window !== "undefined") {
       window.addEventListener("online", this.onlineHandler);
 
-      // 3. Idle sync — runs when browser is idle
+      // 3. Visibility change — pull when user switches back to this tab
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          this.pullFromCloud().then(() => this.processQueue());
+        }
+      });
+
+      // 4. Idle sync — runs when browser is idle
       if ("requestIdleCallback" in window) {
         this.idleCallback = window.requestIdleCallback(
           () => {
-            this.processQueue();
+            this.pullFromCloud().then(() => this.processQueue());
           },
           { timeout: 5000 }
         );
       }
     }
 
-    // 4. Periodic timer — every 30 seconds (respects internal throttle)
+    // 5. Periodic timer — every 30 seconds: pull remote changes, then push local
     this.timer = setInterval(() => {
-      this.processQueue();
+      this.pullFromCloud().then(() => this.processQueue());
     }, 30_000);
 
-    console.log("[Sync] Engine started");
+    console.log("[Sync] Engine started (bidirectional sync active)");
   }
 
   /**

@@ -1,9 +1,10 @@
 // Dashboard — premium greeting, big numbers, activity timeline + sales chart
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { getAllProducts, getAllVariants, getRecentEvents } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { getDailySales } from "../engine/analytics-engine"
 import { getSyncMetrics } from "../sync/sync-monitor"
+import { onSyncPulled } from "../sync/sync-events"
 import Card from "../ui/components/Card"
 import Timeline, { type TimelineEvent } from "../ui/components/Timeline"
 import StatCard from "../ui/components/StatCard"
@@ -47,37 +48,40 @@ export default function Dashboard() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      const [products, variants, events, metrics] = await Promise.all([
-        getAllProducts(),
-        getAllVariants(),
-        getRecentEvents(10),
-        getSyncMetrics(),
-      ])
+  const load = useCallback(async () => {
+    const [products, variants, events, metrics] = await Promise.all([
+      getAllProducts(),
+      getAllVariants(),
+      getRecentEvents(10),
+      getSyncMetrics(),
+    ])
 
-      const stockResults = await Promise.all(variants.map(async (v) => ({ variant: v, stock: await getStock(v.id) })))
-      const totalStock = stockResults.reduce((sum, r) => sum + r.stock, 0)
-      const productMap = new Map(products.map((p) => [p.id, p]))
+    const stockResults = await Promise.all(variants.map(async (v) => ({ variant: v, stock: await getStock(v.id) })))
+    const totalStock = stockResults.reduce((sum, r) => sum + r.stock, 0)
+    const productMap = new Map(products.map((p) => [p.id, p]))
 
-      const lowStock = stockResults
-        .filter((r) => r.stock >= 0 && r.stock < LOW_STOCK_THRESHOLD)
-        .map((r) => ({ variant: r.variant, product: productMap.get(r.variant.product_id) ?? { id: "", name: "Unknown", created_at: 0 }, stock: r.stock }))
-        .sort((a, b) => a.stock - b.stock)
+    const lowStock = stockResults
+      .filter((r) => r.stock >= 0 && r.stock < LOW_STOCK_THRESHOLD)
+      .map((r) => ({ variant: r.variant, product: productMap.get(r.variant.product_id) ?? { id: "", name: "Unknown", created_at: 0 }, stock: r.stock }))
+      .sort((a, b) => a.stock - b.stock)
 
-      const chartData: { date: string; sales: number }[] = []
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(Date.now() - i * 86400000)
-        const dateStr = d.toISOString().slice(0, 10)
-        const daySales = await getDailySales(dateStr)
-        chartData.push({ date: d.toLocaleDateString("en", { month: "short", day: "numeric" }), sales: daySales.totalQuantity })
-      }
-
-      setData({ totalProducts: products.length, totalStock, lowStock, recentEvents: events, lowStockCount: lowStock.length, metrics, chartData })
-      setLoading(false)
+    const chartData: { date: string; sales: number }[] = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000)
+      const dateStr = d.toISOString().slice(0, 10)
+      const daySales = await getDailySales(dateStr)
+      chartData.push({ date: d.toLocaleDateString("en", { month: "short", day: "numeric" }), sales: daySales.totalQuantity })
     }
-    load()
+
+    setData({ totalProducts: products.length, totalStock, lowStock, recentEvents: events, lowStockCount: lowStock.length, metrics, chartData })
+    setLoading(false)
   }, [])
+
+  useEffect(() => {
+    load()
+    // Re-load whenever the sync engine pulls remote changes
+    return onSyncPulled(load)
+  }, [load])
 
   if (loading) return <Loader />
   if (!data) return null

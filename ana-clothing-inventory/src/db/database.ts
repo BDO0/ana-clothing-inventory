@@ -69,6 +69,37 @@ export async function hydrateDatabase(
   });
 }
 
+/**
+ * Merge remote data from Supabase into the local database using upsert (bulkPut).
+ * This is safe to call at any time — it will NOT wipe local data.
+ * Records from the cloud are marked synced=true.
+ * Locally-pending (unsynced) records are NOT overwritten for products/variants
+ * because their version in the sync_queue is the authoritative outbound write.
+ * Events are append-only and safe to upsert by ID.
+ */
+export async function mergeFromCloud(
+  products: Product[],
+  variants: Variant[],
+  events: InventoryEvent[]
+): Promise<void> {
+  await db.transaction("rw", db.products, db.variants, db.inventory_events, async () => {
+    // For products and variants: only upsert records that don't exist locally
+    // OR that are already synced (i.e. the cloud version is authoritative).
+    // This prevents overwriting locally-pending changes with stale cloud data.
+    const localProductIds = new Set((await db.products.toArray()).filter(p => !p.synced).map(p => p.id));
+    const localVariantIds = new Set((await db.variants.toArray()).filter(v => !v.synced).map(v => v.id));
+
+    const safeProducts = products.filter(p => !localProductIds.has(p.id));
+    const safeVariants = variants.filter(v => !localVariantIds.has(v.id));
+
+    if (safeProducts.length > 0) await db.products.bulkPut(safeProducts);
+    if (safeVariants.length > 0) await db.variants.bulkPut(safeVariants);
+
+    // Events are append-only — always safe to upsert by ID
+    if (events.length > 0) await db.inventory_events.bulkPut(events);
+  });
+}
+
 export async function appendEvent(
   event: Omit<InventoryEvent, "id" | "created_at" | "synced">
 ): Promise<void> {

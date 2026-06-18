@@ -114,8 +114,9 @@
 - [x] PWA manifest and service worker for full offline install — **COMPLETED**
 - [x] Barcode scanning — **COMPLETED**
 - [x] User authentication (Supabase Auth) — **COMPLETED**
+- [x] Export reports (PDF, CSV) — **COMPLETED**
+- [x] Production Deployment (Vercel, GitHub) — **COMPLETED**
 - [ ] Multi-tenant support
 - [ ] Stock alerts/thresholds notifications
-- [x] Export reports (PDF, CSV) — **COMPLETED**
 - [ ] Performance optimization for 10k+ events (cached projections, materialized snapshots — noted in stock-engine.ts)
 - [ ] RETURN and ADJUSTMENT event types are defined but may need UI support

@@ -4,6 +4,7 @@ import { AlertTriangle, ShoppingCart, ScanLine } from "lucide-react"
 import { getAllProducts, getVariantsByProduct, getAllVariants } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { recordSale } from "../engine/inventory-service"
+import { onSyncPulled } from "../sync/sync-events"
 import type { Product, Variant } from "../db/models"
 import Card from "../ui/components/Card"
 import BarcodeScanner from "../ui/components/BarcodeScanner"
@@ -30,6 +31,12 @@ export default function Sales() {
   useEffect(() => { getAllVariants().then(setAllVariants) }, [])
 
   useEffect(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }, [])
+
+  // Re-load product list whenever the sync engine pulls remote changes
+  useEffect(() => onSyncPulled(() => {
+    getAllProducts().then((all) => { setProducts(all); setLoading(false) })
+    getAllVariants().then(setAllVariants)
+  }), [])
 
   function onProductChange(id: string) {
     setPId(id); setVId(""); setCurrentStock(null); setErrors({})
