@@ -26,7 +26,7 @@ import {
 } from "./supabase-client";
 import { dispatchSyncPulled } from "./sync-events";
 
-const MIN_SYNC_INTERVAL_MS = 10_000; // throttle: 10 seconds
+const MIN_SYNC_INTERVAL_MS = 3_000; // throttle for periodic syncs: 3 seconds
 
 export type { SyncConfig };
 
@@ -90,7 +90,7 @@ export class SyncEngine {
    * Process all PENDING items from the sync queue.
    * Groups events into batches and sends them via the Supabase client.
    */
-  async processQueue(): Promise<void> {
+  async processQueue(force = false): Promise<void> {
     if (!this.isConfigured()) {
       console.warn("[Sync] Supabase not configured — skipping sync");
       return;
@@ -101,9 +101,10 @@ export class SyncEngine {
       return;
     }
 
-    // Throttle: prevent more frequent than MIN_SYNC_INTERVAL
+    // Throttle: prevent too-frequent calls from the periodic timer.
+    // force=true bypasses this (used by triggerImmediateSync after a user write).
     const now = Date.now();
-    if (now - this.lastSyncTime < MIN_SYNC_INTERVAL_MS) {
+    if (!force && now - this.lastSyncTime < MIN_SYNC_INTERVAL_MS) {
       console.log("[Sync] Throttled — skipping (too soon since last sync)");
       return;
     }
@@ -281,9 +282,8 @@ export class SyncEngine {
    * instead of waiting up to 30 seconds for the periodic timer.
    */
   async triggerImmediateSync(): Promise<void> {
-    // Reset the throttle timestamp so processQueue() won't skip
-    this.lastSyncTime = 0;
-    await this.processQueue();
+    // force=true skips the throttle check completely — no race condition possible
+    await this.processQueue(true);
   }
 
   /**
