@@ -84,11 +84,12 @@ export class SupabaseClient {
       });
 
       if (!response.ok) {
+        const bodyText = await response.text().catch(() => "");
         return {
           ok: false,
           errorType: classifyError(response.status, response.statusText),
           status: response.status,
-          statusText: response.statusText,
+          statusText: `${response.statusText} | ${bodyText}`,
         };
       }
 
@@ -133,7 +134,8 @@ export class SupabaseClient {
         body: JSON.stringify(variant),
       });
       if (!response.ok) {
-        return { ok: false, errorType: classifyError(response.status, response.statusText), status: response.status, statusText: response.statusText };
+        const bodyText = await response.text().catch(() => "");
+        return { ok: false, errorType: classifyError(response.status, response.statusText), status: response.status, statusText: `${response.statusText} | ${bodyText}` };
       }
       return { ok: true, errorType: "NETWORK", status: 200, statusText: "OK" };
     } catch (err) {

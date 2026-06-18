@@ -201,8 +201,8 @@ export class SyncEngine {
         await markSynced(item.id!, entityId, item.type);
         synced++;
       } else {
-        console.error(`[Sync] Item ${item.id} failed: ${response.errorType} (${response.status})`);
-        await markFailed(item.id!, response.errorType);
+        console.error(`[Sync] Item ${item.id} failed: ${response.errorType} (${response.status}) - ${response.statusText}`);
+        await markFailed(item.id!, response.errorType, response.statusText);
         failed++;
 
         // Stop processing on validation errors to prevent cascading FK failures

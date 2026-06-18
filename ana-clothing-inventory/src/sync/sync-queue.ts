@@ -58,7 +58,8 @@ export async function markSynced(
  */
 export async function markFailed(
   queueId: number,
-  errorType: string = "UNKNOWN"
+  errorType: string = "UNKNOWN",
+  errorMsg: string = ""
 ): Promise<void> {
   const item = await db.sync_queue.get(queueId);
   if (!item) return;
@@ -70,6 +71,7 @@ export async function markFailed(
     await db.sync_queue.update(queueId, {
       status: "FAILED",
       retries,
+      ...(errorMsg && { error_msg: errorMsg } as any)
     });
     return;
   }
@@ -78,6 +80,7 @@ export async function markFailed(
   await db.sync_queue.update(queueId, {
     status: retries >= MAX_RETRIES ? "FAILED" : "PENDING",
     retries,
+    ...(errorMsg && { error_msg: errorMsg } as any)
   });
 }
 
