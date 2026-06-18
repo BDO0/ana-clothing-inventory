@@ -33,8 +33,8 @@ export function toDTO(event: InventoryEvent): InventoryEventDTO {
     variant_id: event.variant_id,
     type: event.type,
     quantity: event.quantity,
-    reference: event.reference,
-    note: event.note,
+    reference: event.reference || undefined,
+    note: event.note || undefined,
     created_at: new Date(event.created_at).toISOString(),
     synced: event.synced,
   };
@@ -62,8 +62,8 @@ export function toProductDTO(product: import("../db/models").Product): ProductDT
   return {
     id: product.id,
     name: product.name,
-    category_id: product.category_id,
-    description: product.description,
+    category_id: product.category_id || undefined,
+    description: product.description || undefined,
     created_at: new Date(product.created_at).toISOString(),
   };
 }
@@ -84,10 +84,10 @@ export function toVariantDTO(variant: import("../db/models").Variant): VariantDT
   return {
     id: variant.id,
     product_id: variant.product_id,
-    size: variant.size,
-    color: variant.color,
-    sku: variant.sku,
-    barcode: variant.barcode,
+    size: variant.size || undefined,
+    color: variant.color || undefined,
+    sku: variant.sku || undefined,
+    barcode: variant.barcode || undefined,
   };
 }
 
