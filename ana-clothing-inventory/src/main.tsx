@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { syncEngine, SyncEngine } from "./sync/sync-engine";
 import { setSupabaseConfigured, cleanStalePendingItems } from "./db/database";
+import { startRealtimeSync } from "./sync/realtime";
 import "./index.css";
 import App from "./App";
 
@@ -26,6 +27,8 @@ if (hasSupabaseConfig) {
   SyncEngine.getInstance({ supabaseUrl, supabaseKey });
   setSupabaseConfigured(true);
   console.log("[App] Supabase configured — sync engine active");
+  // Start Realtime WebSocket for instant cross-device sync (~0ms delay)
+  startRealtimeSync();
 } else {
   console.log(
     "[App] Supabase not configured — running local-only. " +
