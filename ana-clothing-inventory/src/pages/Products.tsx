@@ -4,6 +4,7 @@ import { Plus, ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { getAllProducts, getVariantsByProduct } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { createProduct, createVariant, editProduct, removeProduct, editVariant, removeVariant } from "../engine/product-service"
+import { db } from "../db/database"
 import { onSyncPulled } from "../sync/sync-events"
 import type { Product, Variant } from "../db/models"
 import Card from "../ui/components/Card"
@@ -75,10 +76,18 @@ export default function Products() {
   async function handleCreateVariant(e: React.FormEvent) {
     e.preventDefault()
     if (!variantForm) return
-    if (!variantForm.sku.trim()) { setVariantErrors({ sku: "SKU is required" }); return }
-    setVariantErrors({})
     const { productId, size, color, sku } = variantForm
-    await createVariant({ product_id: productId, size, color, sku })
+    if (!sku.trim()) { setVariantErrors({ sku: "SKU is required" }); return }
+    
+    // Check for duplicate SKU globally
+    const existing = await db.variants.where("sku").equals(sku.trim()).first()
+    if (existing) {
+      setVariantErrors({ sku: "This SKU is already in use. SKUs must be globally unique." })
+      return
+    }
+
+    setVariantErrors({})
+    await createVariant({ product_id: productId, size, color, sku: sku.trim() })
     setVariantForm(null)
     const variants = await getVariantsByProduct(productId)
     const stocks: Record<string, number> = {}
@@ -103,9 +112,18 @@ export default function Products() {
 
   async function handleEditVariant(e: React.FormEvent) {
     e.preventDefault()
-    if (!editVariantForm || !editVariantForm.sku.trim()) { setVariantErrors({ sku: "SKU is required" }); return }
+    if (!editVariantForm) return
+    if (!editVariantForm.sku.trim()) { setVariantErrors({ sku: "SKU is required" }); return }
+
+    // Check for duplicate SKU globally (ignoring the current variant)
+    const existing = await db.variants.where("sku").equals(editVariantForm.sku.trim()).first()
+    if (existing && existing.id !== editVariantForm.id) {
+      setVariantErrors({ sku: "This SKU is already in use by another variant." })
+      return
+    }
+
     setVariantErrors({})
-    await editVariant(editVariantForm.id, { size: editVariantForm.size, color: editVariantForm.color, sku: editVariantForm.sku })
+    await editVariant(editVariantForm.id, { size: editVariantForm.size, color: editVariantForm.color, sku: editVariantForm.sku.trim() })
     
     const productId = editVariantForm.productId
     setEditVariantForm(null)
