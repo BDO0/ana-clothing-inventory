@@ -24,18 +24,19 @@ export default function BarcodeScanner({ onScan, onClose }: BarcodeScannerProps)
 
     async function startScanning() {
       try {
-        const devices = await BrowserMultiFormatReader.listVideoInputDevices()
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const videoDevices = devices.filter(d => d.kind === 'videoinput')
 
-        if (devices.length === 0) {
+        if (videoDevices.length === 0) {
           setErrorMsg("No camera found on this device.")
           setStatus("error")
           return
         }
 
         // Prefer the rear camera on mobile devices
-        const rearCamera = devices.find(d =>
+        const rearCamera = videoDevices.find((d: MediaDeviceInfo) =>
           /back|rear|environment/i.test(d.label)
-        ) ?? devices[0]
+        ) ?? videoDevices[0]
 
         setStatus("scanning")
 

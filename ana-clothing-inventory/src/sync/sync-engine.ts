@@ -13,7 +13,6 @@ import {
 } from "./sync-queue";
 import {
   toDTO,
-  toDTOBatch,
   toProductDTO,
   toVariantDTO,
   fromProductDTO,
@@ -26,7 +25,6 @@ import {
   type SyncConfig,
 } from "./supabase-client";
 
-const BATCH_SIZE = 30;
 const MIN_SYNC_INTERVAL_MS = 10_000; // throttle: 10 seconds
 
 export type { SyncConfig };
