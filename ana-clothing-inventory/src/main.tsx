@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { syncEngine, SyncEngine } from "./sync/sync-engine";
 import { setSupabaseConfigured, cleanStalePendingItems } from "./db/database";
 import { startRealtimeSync } from "./sync/realtime";
+import { logger } from "./lib/logger";
 import "./index.css";
 import App from "./App";
 
@@ -11,7 +12,7 @@ import App from "./App";
 // from previous sessions without Supabase configuration.
 cleanStalePendingItems().then((deleted) => {
   if (deleted > 0) {
-    console.log(`[App] Cleaned ${deleted} stale pending sync items`);
+    logger.log(`[App] Cleaned ${deleted} stale pending sync items`);
   }
 });
 
@@ -26,11 +27,11 @@ if (hasSupabaseConfig) {
   // Configure the sync engine with Supabase credentials
   SyncEngine.getInstance({ supabaseUrl, supabaseKey });
   setSupabaseConfigured(true);
-  console.log("[App] Supabase configured — sync engine active");
+  logger.log("[App] Supabase configured — sync engine active");
   // Start Realtime WebSocket for instant cross-device sync (~0ms delay)
   startRealtimeSync();
 } else {
-  console.log(
+  logger.log(
     "[App] Supabase not configured — running local-only. " +
     "Set VITE_SUPABASE_URL and VITE_SUPABASE_KEY env vars to enable cloud sync."
   );

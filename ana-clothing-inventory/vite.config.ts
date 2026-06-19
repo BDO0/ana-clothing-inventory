@@ -41,17 +41,33 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         runtimeCaching: [
+          // Cache Google Fonts stylesheets (CacheFirst — fonts never change by URL)
           {
-            urlPattern: /^https?:\/\/.*/i,
-            handler: 'NetworkFirst',
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'external-cache',
+              cacheName: 'google-fonts-stylesheets',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
               },
             },
           },
+          // Cache Google Fonts files (CacheFirst — files are immutable)
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+            },
+          },
+          // ⚠️ Supabase API calls are intentionally NOT cached.
+          // Inventory data must always come from the network to prevent stale reads.
+          // The sync engine handles offline resilience via IndexedDB, not the SW cache.
         ],
       },
     }),

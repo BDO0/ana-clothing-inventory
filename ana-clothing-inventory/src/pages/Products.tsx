@@ -248,6 +248,7 @@ export default function Products() {
             value={newProductName}
             onChange={(e) => { setNewProductName(e.target.value); if (productNameError) setProductNameError("") }}
             autoFocus
+            maxLength={100}
             className={productNameError ? "border-error" : ""}
           />
           {productNameError && <div className="text-xs text-error mt-1">{productNameError}</div>}
@@ -262,9 +263,9 @@ export default function Products() {
         {variantForm && (
           <form onSubmit={handleCreateVariant}>
             <div className="flex flex-col gap-2.5">
-              <Input placeholder="Size (e.g. M, 32, XL)" value={variantForm.size} onChange={(e) => setVariantForm({ ...variantForm, size: e.target.value })} />
-              <Input placeholder="Color (e.g. Black, Navy)" value={variantForm.color} onChange={(e) => setVariantForm({ ...variantForm, color: e.target.value })} />
-              <Input placeholder="SKU" value={variantForm.sku} onChange={(e) => { setVariantForm({ ...variantForm, sku: e.target.value }); if (variantErrors.sku) setVariantErrors({}) }} className={variantErrors.sku ? "border-error" : ""} />
+              <Input placeholder="Size (e.g. M, 32, XL)" value={variantForm.size} onChange={(e) => setVariantForm({ ...variantForm, size: e.target.value })} maxLength={50} />
+              <Input placeholder="Color (e.g. Black, Navy)" value={variantForm.color} onChange={(e) => setVariantForm({ ...variantForm, color: e.target.value })} maxLength={50} />
+              <Input placeholder="SKU" value={variantForm.sku} onChange={(e) => { setVariantForm({ ...variantForm, sku: e.target.value }); if (variantErrors.sku) setVariantErrors({}) }} maxLength={50} className={variantErrors.sku ? "border-error" : ""} />
               {variantErrors.sku && <div className="text-xs text-error -mt-1.5">{variantErrors.sku}</div>}
             </div>
             <div className="flex gap-2 justify-end mt-4">
@@ -283,6 +284,7 @@ export default function Products() {
               value={editProductForm.name}
               onChange={(e) => setEditProductForm({ ...editProductForm, name: e.target.value })}
               autoFocus
+              maxLength={100}
             />
             <div className="flex gap-2 justify-end mt-4">
               <Button type="button" variant="outline" onClick={() => setEditProductForm(null)}>Cancel</Button>
@@ -296,9 +298,9 @@ export default function Products() {
         {editVariantForm && (
           <form onSubmit={handleEditVariant}>
             <div className="flex flex-col gap-2.5">
-              <Input placeholder="Size (e.g. M, 32, XL)" value={editVariantForm.size} onChange={(e) => setEditVariantForm({ ...editVariantForm, size: e.target.value })} />
-              <Input placeholder="Color (e.g. Black, Navy)" value={editVariantForm.color} onChange={(e) => setEditVariantForm({ ...editVariantForm, color: e.target.value })} />
-              <Input placeholder="SKU" value={editVariantForm.sku} onChange={(e) => { setEditVariantForm({ ...editVariantForm, sku: e.target.value }); if (variantErrors.sku) setVariantErrors({}) }} className={variantErrors.sku ? "border-error" : ""} />
+              <Input placeholder="Size (e.g. M, 32, XL)" value={editVariantForm.size} onChange={(e) => setEditVariantForm({ ...editVariantForm, size: e.target.value })} maxLength={50} />
+              <Input placeholder="Color (e.g. Black, Navy)" value={editVariantForm.color} onChange={(e) => setEditVariantForm({ ...editVariantForm, color: e.target.value })} maxLength={50} />
+              <Input placeholder="SKU" value={editVariantForm.sku} onChange={(e) => { setEditVariantForm({ ...editVariantForm, sku: e.target.value }); if (variantErrors.sku) setVariantErrors({}) }} maxLength={50} className={variantErrors.sku ? "border-error" : ""} />
               {variantErrors.sku && <div className="text-xs text-error -mt-1.5">{variantErrors.sku}</div>}
             </div>
             <div className="flex gap-2 justify-end mt-4">

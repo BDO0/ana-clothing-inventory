@@ -171,7 +171,7 @@ export default function Sales() {
                 )}
                 <div className="mb-3">
                   <Label>Note (optional)</Label>
-                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Walk-in sale" />
+                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Walk-in sale" maxLength={500} />
                 </div>
                 <Button variant="destructive" className="w-full" onClick={handleSubmit} disabled={!hasValidQty}>
                   <ShoppingCart size={14} /> {wouldGoNegative ? "Record Sale (overstock)" : "Confirm Sale"}

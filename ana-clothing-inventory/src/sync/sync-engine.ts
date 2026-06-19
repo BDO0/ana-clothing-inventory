@@ -25,6 +25,7 @@ import {
   type SyncConfig,
 } from "./supabase-client";
 import { dispatchSyncPulled } from "./sync-events";
+import { logger } from "../lib/logger";
 
 const MIN_SYNC_INTERVAL_MS = 3_000; // throttle for periodic syncs: 3 seconds
 
@@ -93,18 +94,18 @@ export class SyncEngine {
    */
   async processQueue(force = false): Promise<void> {
     if (!this.isConfigured()) {
-      console.warn("[Sync] Supabase not configured — skipping sync");
+      logger.warn("[Sync] Supabase not configured — skipping sync");
       return;
     }
 
     if (!this.isOnline()) {
-      console.log("[Sync] Offline — sync skipped");
+      logger.log("[Sync] Offline — sync skipped");
       return;
     }
 
     // Mutex: prevent concurrent runs which cause FK race conditions
     if (this._syncing) {
-      console.log("[Sync] Already syncing — skipping concurrent call");
+      logger.log("[Sync] Already syncing — skipping concurrent call");
       return;
     }
 
@@ -112,7 +113,7 @@ export class SyncEngine {
     // force=true bypasses this (used by triggerImmediateSync after a user write).
     const now = Date.now();
     if (!force && now - this.lastSyncTime < MIN_SYNC_INTERVAL_MS) {
-      console.log("[Sync] Throttled — skipping (too soon since last sync)");
+      logger.log("[Sync] Throttled — skipping (too soon since last sync)");
       return;
     }
 
@@ -128,11 +129,11 @@ export class SyncEngine {
   private async _runQueue(): Promise<void> {
     const pending = await getPendingItems();
     if (pending.length === 0) {
-      console.log("[Sync] Queue is empty");
+      logger.log("[Sync] Queue is empty");
       return;
     }
 
-    console.log(`[Sync] Processing ${pending.length} pending item(s)...`);
+    logger.log(`[Sync] Processing ${pending.length} pending item(s)...`);
 
     let synced = 0;
     let failed = 0;
@@ -144,7 +145,7 @@ export class SyncEngine {
     });
 
     if (eligible.length === 0) {
-      console.log("[Sync] All items are still in backoff");
+      logger.log("[Sync] All items are still in backoff");
       return;
     }
 
@@ -193,7 +194,7 @@ export class SyncEngine {
       }
 
       if (!response) {
-        console.warn(`[Sync] Unknown queue item type: ${item.type}`);
+        logger.warn(`[Sync] Unknown queue item type: ${item.type}`);
         continue;
       }
 
@@ -201,19 +202,19 @@ export class SyncEngine {
         await markSynced(item.id!, entityId, item.type);
         synced++;
       } else {
-        console.error(`[Sync] Item ${item.id} failed: ${response.errorType} (${response.status}) - ${response.statusText}`);
+        logger.error(`[Sync] Item ${item.id} failed: ${response.errorType} (${response.status}) - ${response.statusText}`);
         await markFailed(item.id!, response.errorType, response.statusText);
         failed++;
 
         // Stop processing on validation errors to prevent cascading FK failures
         if (response.errorType === "VALIDATION") {
-          console.error("[Sync] Validation error — pausing sync queue");
+          logger.error("[Sync] Validation error — pausing sync queue");
           break;
         }
       }
     }
 
-    console.log(`[Sync] Done — synced=${synced} failed=${failed}`);
+    logger.log(`[Sync] Done — synced=${synced} failed=${failed}`);
   }
 
   /**
@@ -229,7 +230,7 @@ export class SyncEngine {
       return; // Only hydrate if fresh/empty — otherwise use pullFromCloud()
     }
 
-    console.log("[Sync] Local database is empty — hydrating from cloud...");
+    logger.log("[Sync] Local database is empty — hydrating from cloud...");
 
     try {
       const [productDTOs, variantDTOs, eventDTOs] = await Promise.all([
@@ -244,9 +245,9 @@ export class SyncEngine {
 
       await hydrateDatabase(products, variants, events);
 
-      console.log(`[Sync] Hydration complete: ${products.length} products, ${variants.length} variants, ${events.length} events`);
+      logger.log(`[Sync] Hydration complete: ${products.length} products, ${variants.length} variants, ${events.length} events`);
     } catch (err) {
-      console.error("[Sync] Hydration failed:", err);
+      logger.error("[Sync] Hydration failed:", err);
     }
   }
 
@@ -276,9 +277,9 @@ export class SyncEngine {
       // Notify React pages to reload their data from IndexedDB
       dispatchSyncPulled();
 
-      console.log(`[Sync] Pull complete: ${products.length} products, ${variants.length} variants, ${events.length} events`);
+      logger.log(`[Sync] Pull complete: ${products.length} products, ${variants.length} variants, ${events.length} events`);
     } catch (err) {
-      console.error("[Sync] Pull from cloud failed:", err);
+      logger.error("[Sync] Pull from cloud failed:", err);
     }
   }
 
@@ -328,7 +329,7 @@ export class SyncEngine {
 
     // 2. Internet reconnect trigger — pull AND push when coming back online
     this.onlineHandler = () => {
-      console.log("[Sync] Network restored — pulling remote changes then pushing local queue");
+      logger.log("[Sync] Network restored — pulling remote changes then pushing local queue");
       this.pullFromCloud().then(() => this.processQueue());
     };
 
@@ -358,7 +359,7 @@ export class SyncEngine {
       this.pullFromCloud().then(() => this.processQueue());
     }, 30_000);
 
-    console.log("[Sync] Engine started (bidirectional sync active)");
+    logger.log("[Sync] Engine started (bidirectional sync active)");
   }
 
   /**
@@ -382,7 +383,7 @@ export class SyncEngine {
       this.idleCallback = null;
     }
 
-    console.log("[Sync] Engine stopped");
+    logger.log("[Sync] Engine stopped");
   }
 }
 

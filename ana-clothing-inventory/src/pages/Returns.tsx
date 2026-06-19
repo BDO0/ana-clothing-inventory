@@ -123,11 +123,11 @@ export default function Returns() {
                 </div>
                 <div className="mb-3">
                   <Label>Reference (optional)</Label>
-                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="RMA-12345" />
+                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="RMA-12345" maxLength={100} />
                 </div>
                 <div className="mb-3">
                   <Label>Note (optional)</Label>
-                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Customer return — damaged packaging" />
+                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Customer return — damaged packaging" maxLength={500} />
                 </div>
                 <Button variant="outline" className="w-full border-[color:var(--color-warning,#B8860B)] text-[color:var(--color-warning,#B8860B)] hover:bg-[color:var(--color-warning,#B8860B)]/5" onClick={handleSubmit} disabled={!hasValidQty}>
                   <Undo2 size={14} /> Confirm Return

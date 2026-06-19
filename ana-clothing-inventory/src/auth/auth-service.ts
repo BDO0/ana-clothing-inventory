@@ -31,6 +31,15 @@ export function getAuthToken(): string | null {
   return currentSession?.access_token || null;
 }
 
+/**
+ * Get the currently logged-in user's UUID.
+ * Used to stamp user_id on every new inventory event for audit trail.
+ * Returns null when auth is disabled or no user is logged in.
+ */
+export function getCurrentUserId(): string | null {
+  return currentSession?.user?.id ?? null;
+}
+
 export function isAuthEnabled(): boolean {
   return supabase !== null;
 }

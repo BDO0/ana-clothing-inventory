@@ -17,6 +17,7 @@ export interface InventoryEventDTO {
   note?: string;
   created_at: string;
   synced: boolean;
+  user_id?: string; // UUID of the user who created this event — for audit trail
 }
 
 /**
@@ -37,6 +38,7 @@ export function toDTO(event: InventoryEvent): InventoryEventDTO {
     note: event.note || undefined,
     created_at: new Date(event.created_at).toISOString(),
     synced: event.synced,
+    user_id: event.user_id || undefined,
   };
 }
 
@@ -129,5 +131,6 @@ export function fromEventDTO(dto: InventoryEventDTO): import("../db/models").Inv
     note: dto.note || undefined,
     created_at: new Date(dto.created_at).getTime(),
     synced: true,
+    user_id: dto.user_id || undefined,
   };
 }

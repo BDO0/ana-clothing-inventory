@@ -161,11 +161,11 @@ export default function StockIn() {
                 </div>
                 <div className="mb-3">
                   <Label>Reference (optional)</Label>
-                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="PO-12345" />
+                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="PO-12345" maxLength={100} />
                 </div>
                 <div className="mb-3">
                   <Label>Note (optional)</Label>
-                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Initial stock" />
+                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Initial stock" maxLength={500} />
                 </div>
                 <Button variant="success" className="w-full" onClick={handleSubmit} disabled={!hasValidQty}>
                   <Check size={14} /> Confirm

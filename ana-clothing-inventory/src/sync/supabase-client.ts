@@ -4,6 +4,7 @@
 
 import type { InventoryEventDTO } from "./dto";
 import { getAuthToken } from "../auth/auth-service";
+import { logger } from "../lib/logger";
 
 export type SyncErrorType =
   | "NETWORK"
@@ -67,7 +68,7 @@ export class SupabaseClient {
     return {
       "Content-Type": "application/json",
       apikey: this.config.supabaseKey!,
-      Authorization: `Bearer ${token || this.config.supabaseKey!}`,
+      Authorization: `Bearer ${token ?? ""}`,
       Prefer: "return=minimal",
     };
   }
@@ -261,13 +262,13 @@ export class SupabaseClient {
       });
 
       if (!response.ok) {
-        console.warn(`[Supabase] GET events failed: ${response.status}`);
+        logger.warn(`[Supabase] GET events failed: ${response.status}`);
         return [];
       }
 
       return (await response.json()) as InventoryEventDTO[];
     } catch (err) {
-      console.warn("[Supabase] GET events error:", err);
+      logger.warn("[Supabase] GET events error:", err);
       return [];
     }
   }
@@ -282,7 +283,7 @@ export class SupabaseClient {
       if (!response.ok) return [];
       return (await response.json()) as import("./dto").ProductDTO[];
     } catch (err) {
-      console.warn("[Supabase] GET products error:", err);
+      logger.warn("[Supabase] GET products error:", err);
       return [];
     }
   }
@@ -297,7 +298,7 @@ export class SupabaseClient {
       if (!response.ok) return [];
       return (await response.json()) as import("./dto").VariantDTO[];
     } catch (err) {
-      console.warn("[Supabase] GET variants error:", err);
+      logger.warn("[Supabase] GET variants error:", err);
       return [];
     }
   }

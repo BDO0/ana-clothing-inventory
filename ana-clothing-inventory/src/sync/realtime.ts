@@ -8,6 +8,7 @@
 
 import { supabase } from "../auth/auth-service";
 import { syncEngine } from "./sync-engine";
+import { logger } from "../lib/logger";
 
 type RealtimeChannel = ReturnType<NonNullable<typeof supabase>["channel"]>;
 
@@ -22,9 +23,9 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 function handleRemoteChange(): void {
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
-    console.log("[Realtime] Remote change detected — pulling latest data");
+    logger.log("[Realtime] Remote change detected — pulling latest data");
     syncEngine.pullFromCloud().catch((err) => {
-      console.warn("[Realtime] Pull failed:", err);
+      logger.warn("[Realtime] Pull failed:", err);
     });
   }, 250);
 }
@@ -42,12 +43,12 @@ function handleRemoteChange(): void {
  */
 export function startRealtimeSync(): void {
   if (!supabase) {
-    console.log("[Realtime] Supabase not configured — skipping realtime sync");
+    logger.log("[Realtime] Supabase not configured — skipping realtime sync");
     return;
   }
 
   if (realtimeChannel) {
-    console.log("[Realtime] Already running");
+    logger.log("[Realtime] Already running");
     return;
   }
 
@@ -70,11 +71,11 @@ export function startRealtimeSync(): void {
     )
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        console.log("[Realtime] ✅ Connected — instant sync active");
+        logger.log("[Realtime] ✅ Connected — instant sync active");
       } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-        console.warn(`[Realtime] ⚠️ Connection issue: ${status} — falling back to 30s polling`);
+        logger.warn(`[Realtime] ⚠️ Connection issue: ${status} — falling back to 30s polling`);
       } else {
-        console.log(`[Realtime] Status: ${status}`);
+        logger.log(`[Realtime] Status: ${status}`);
       }
     });
 }
@@ -87,7 +88,7 @@ export function stopRealtimeSync(): void {
   if (realtimeChannel && supabase) {
     supabase.removeChannel(realtimeChannel);
     realtimeChannel = null;
-    console.log("[Realtime] Stopped");
+    logger.log("[Realtime] Stopped");
   }
   if (debounceTimer) {
     clearTimeout(debounceTimer);

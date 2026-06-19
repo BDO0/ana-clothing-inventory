@@ -161,11 +161,11 @@ export default function Adjustments() {
                 )}
                 <div className="mb-3">
                   <Label>Reference (optional)</Label>
-                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="ADJ-001" />
+                  <Input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="ADJ-001" maxLength={100} />
                 </div>
                 <div className="mb-3">
                   <Label>Note (optional)</Label>
-                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Cycle count correction" />
+                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Cycle count correction" maxLength={500} />
                 </div>
                 <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent/5" onClick={handleSubmit} disabled={!hasValidQty}>
                   <SlidersHorizontal size={14} /> Confirm Adjustment

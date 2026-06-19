@@ -31,6 +31,7 @@ export interface InventoryEvent {
   note?: string;
   created_at: number;
   synced: boolean;
+  user_id?: string; // UUID of the authenticated user who created this event (for audit trail)
 }
 
 export type SyncStatus = "PENDING" | "SYNCED" | "FAILED";

@@ -15,8 +15,12 @@ import Reports from "./pages/Reports";
 import History from "./pages/History";
 import Returns from "./pages/Returns";
 import Adjustments from "./pages/Adjustments";
-import SystemTest from "./dev/SystemTest";
 import PWAInstallPrompt from "./ui/components/PWAInstallPrompt";
+
+// Only import SystemTest in development — excluded from production bundle entirely
+const SystemTest = import.meta.env.DEV
+  ? (await import("./dev/SystemTest")).default
+  : null;
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -64,7 +68,10 @@ export default function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/history" element={<History />} />
-          <Route path="/system-test" element={<SystemTest />} />
+          {/* /system-test is only registered in development mode */}
+          {import.meta.env.DEV && SystemTest && (
+            <Route path="/system-test" element={<SystemTest />} />
+          )}
         </Routes>
       </AppShell>
       <PWAInstallPrompt />

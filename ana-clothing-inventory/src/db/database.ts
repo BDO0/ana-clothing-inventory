@@ -10,6 +10,7 @@ import type {
   SyncQueueItem,
 } from "./models";
 import { assertValidEvent } from "./validators";
+import { getCurrentUserId } from "../auth/auth-service";
 
 // Lazy import to avoid circular dependency — only used for immediate sync trigger
 async function triggerSync(): Promise<void> {
@@ -118,6 +119,7 @@ export async function appendEvent(
     id: uuid(),
     created_at: Date.now(),
     synced: false,
+    user_id: getCurrentUserId() ?? undefined, // stamp the author's UUID for audit trail
   };
 
   await db.inventory_events.add(fullEvent);

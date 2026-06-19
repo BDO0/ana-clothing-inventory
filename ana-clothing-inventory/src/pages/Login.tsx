@@ -1,10 +1,19 @@
-// Login — premium, high-converting entry point
-import { useState } from "react";
+// Login — secure entry point with brute-force lockout
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../auth/auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Mail, AlertCircle } from "lucide-react";
+import { Lock, Mail, AlertCircle, ShieldAlert } from "lucide-react";
+
+// Max failed attempts before a lockout is triggered
+const MAX_ATTEMPTS = 5;
+// Base lockout duration in seconds (doubles each lockout: 30 → 60 → 120...)
+const BASE_LOCKOUT_SECONDS = 30;
+
+// Generic error message — never expose Supabase's internal error strings to prevent
+// account enumeration (attacker can't tell if email exists vs. wrong password)
+const GENERIC_AUTH_ERROR = "Invalid email or password. Please try again.";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,9 +21,33 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Brute-force state
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState(0);
+  const lockoutMultiplierRef = useRef(1);
+
+  // Countdown timer during lockout
+  useEffect(() => {
+    if (lockoutUntil === null) return;
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setLockoutUntil(null);
+        setLockoutSecondsLeft(0);
+        setError(null);
+      } else {
+        setLockoutSecondsLeft(remaining);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [lockoutUntil]);
+
+  const isLockedOut = lockoutUntil !== null && Date.now() < lockoutUntil;
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!supabase) return;
+    if (!supabase || isLockedOut) return;
 
     setLoading(true);
     setError(null);
@@ -26,12 +59,28 @@ export default function Login() {
       });
 
       if (authError) {
-        throw new Error(authError.message);
+        // Increment failed attempts
+        const newAttempts = failedAttempts + 1;
+        setFailedAttempts(newAttempts);
+
+        if (newAttempts >= MAX_ATTEMPTS) {
+          // Trigger lockout — duration doubles with each lockout cycle
+          const lockoutSeconds = BASE_LOCKOUT_SECONDS * lockoutMultiplierRef.current;
+          lockoutMultiplierRef.current = Math.min(lockoutMultiplierRef.current * 2, 16); // cap at 16x = 8 min
+          const until = Date.now() + lockoutSeconds * 1000;
+          setLockoutUntil(until);
+          setLockoutSecondsLeft(lockoutSeconds);
+          setFailedAttempts(0); // reset count for next cycle
+          setError(`Too many failed attempts. Please wait ${lockoutSeconds} seconds.`);
+        } else {
+          const remaining = MAX_ATTEMPTS - newAttempts;
+          // Use generic error — don't expose Supabase internals
+          setError(`${GENERIC_AUTH_ERROR} (${remaining} attempt${remaining !== 1 ? "s" : ""} remaining)`);
+        }
       }
-      
-      // If successful, the onAuthStateChange listener in App.tsx will auto-redirect
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in");
+      // On success: onAuthStateChange in App.tsx handles redirect — no action needed here
+    } catch {
+      setError(GENERIC_AUTH_ERROR);
     } finally {
       setLoading(false);
     }
@@ -55,7 +104,20 @@ export default function Login() {
         <form onSubmit={handleLogin} className="bg-surface border border-border p-8 rounded-[24px] shadow-sm">
           <h2 className="text-lg font-semibold text-text mb-6">Sign In</h2>
 
-          {error && (
+          {isLockedOut && (
+            <div className="mb-6 p-3 bg-error/10 border border-error/20 rounded-xl flex items-start gap-2.5">
+              <ShieldAlert size={16} className="text-error flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-error leading-tight font-semibold">Account temporarily locked</p>
+                <p className="text-xs text-error/80 mt-0.5">
+                  Too many failed attempts. Try again in{" "}
+                  <span className="font-bold tabular-nums">{lockoutSecondsLeft}s</span>.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {error && !isLockedOut && (
             <div className="mb-6 p-3 bg-error/10 border border-error/20 rounded-xl flex items-start gap-2.5">
               <AlertCircle size={16} className="text-error flex-shrink-0 mt-0.5" />
               <span className="text-sm text-error leading-tight">{error}</span>
@@ -70,12 +132,15 @@ export default function Login() {
                   <Mail size={16} className="text-muted" />
                 </div>
                 <Input
+                  id="login-email"
                   type="email"
+                  autoComplete="username"
                   placeholder="admin@anaclothing.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 h-11 bg-bg border-border rounded-xl focus-visible:ring-accent"
                   required
+                  disabled={isLockedOut}
                 />
               </div>
             </div>
@@ -87,12 +152,15 @@ export default function Login() {
                   <Lock size={16} className="text-muted" />
                 </div>
                 <Input
+                  id="login-password"
                   type="password"
+                  autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-9 h-11 bg-bg border-border rounded-xl focus-visible:ring-accent"
                   required
+                  disabled={isLockedOut}
                 />
               </div>
             </div>
@@ -101,9 +169,9 @@ export default function Login() {
           <Button 
             type="submit" 
             className="w-full mt-8 h-11 rounded-xl bg-accent hover:bg-accent-light text-white transition-colors"
-            disabled={loading || !email || !password}
+            disabled={loading || !email || !password || isLockedOut}
           >
-            {loading ? "Authenticating..." : "Secure Login"}
+            {loading ? "Authenticating..." : isLockedOut ? `Locked (${lockoutSecondsLeft}s)` : "Secure Login"}
           </Button>
         </form>
         
