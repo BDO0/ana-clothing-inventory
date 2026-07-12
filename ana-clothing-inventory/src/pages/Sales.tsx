@@ -21,6 +21,7 @@ export default function Sales() {
   const [vId, setVId] = useState("")
   const [qty, setQty] = useState("")
   const [note, setNote] = useState("")
+  const [overrideDate, setOverrideDate] = useState("")
   const [currentStock, setCurrentStock] = useState<number | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
@@ -62,11 +63,18 @@ export default function Sales() {
     if (!validate()) return
     const q = parseInt(qty, 10)
     try {
-      await recordSale(vId, q, note || undefined)
+      let created_at: number | undefined = undefined;
+      if (overrideDate) {
+        const d = new Date(overrideDate);
+        if (!isNaN(d.getTime())) {
+          created_at = d.getTime();
+        }
+      }
+      await recordSale(vId, q, note || undefined, undefined, created_at)
       setMessage({ type: "success", text: `✅ Sale of ${q} units recorded.` })
       const updated = await getStock(vId)
       setCurrentStock(updated)
-      setQty(""); setNote(""); setPId(""); setVId(""); setVariants([]); setErrors({})
+      setQty(""); setNote(""); setOverrideDate(""); setPId(""); setVId(""); setVariants([]); setErrors({})
     } catch (err) {
       setMessage({ type: "error", text: `❌ ${err instanceof Error ? err.message : "Unknown error"}` })
     }
@@ -172,6 +180,11 @@ export default function Sales() {
                 <div className="mb-3">
                   <Label>Note (optional)</Label>
                   <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Walk-in sale" maxLength={500} />
+                </div>
+                <div className="mb-4">
+                  <Label>Backdate (optional)</Label>
+                  <Input type="date" value={overrideDate} onChange={(e) => setOverrideDate(e.target.value)} className="text-sm" max={new Date().toISOString().split("T")[0]} />
+                  <div className="text-[11px] text-muted mt-1 leading-tight">Leave empty to record as today. Use this to record past sales for the ledger.</div>
                 </div>
                 <Button variant="destructive" className="w-full" onClick={handleSubmit} disabled={!hasValidQty}>
                   <ShoppingCart size={14} /> {wouldGoNegative ? "Record Sale (overstock)" : "Confirm Sale"}

@@ -40,7 +40,8 @@ export async function recordSale(
   variant_id: string,
   quantity: number,
   note?: string,
-  reference?: string
+  reference?: string,
+  created_at?: number
 ): Promise<void> {
   if (quantity <= 0) {
     throw new Error("Quantity must be greater than 0");
@@ -66,6 +67,7 @@ export async function recordSale(
     quantity,
     note,
     reference,
+    created_at,
   });
 }
 

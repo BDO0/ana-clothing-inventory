@@ -109,15 +109,15 @@ export async function mergeFromCloud(
 }
 
 export async function appendEvent(
-  event: Omit<InventoryEvent, "id" | "created_at" | "synced">
+  event: Omit<InventoryEvent, "id" | "synced"> & { created_at?: number }
 ): Promise<void> {
   // Gate: validate before writing. A bad event = corrupted stock forever.
-  assertValidEvent(event);
+  assertValidEvent(event as any);
 
   const fullEvent: InventoryEvent = {
     ...event,
     id: uuid(),
-    created_at: Date.now(),
+    created_at: event.created_at ?? Date.now(),
     synced: false,
     user_id: getCurrentUserId() ?? undefined, // stamp the author's UUID for audit trail
   };
