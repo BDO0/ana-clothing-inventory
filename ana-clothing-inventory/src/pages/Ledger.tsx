@@ -137,14 +137,14 @@ export default function Ledger() {
           <table className="w-full text-left border-collapse min-w-max text-[13px]">
             <thead className="sticky top-0 z-20 bg-surface shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
               <tr>
-                <th style={{ minWidth: '240px', maxWidth: '240px', left: 0 }} className="p-3 border-b border-r border-border font-semibold text-text sticky z-30 bg-surface shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Product Variant</th>
-                <th style={{ minWidth: '80px', maxWidth: '80px', left: '240px' }} className="p-3 border-b border-r border-border font-semibold text-text sticky z-30 bg-surface text-center">Stock</th>
+                <th className="p-3 border-b border-r border-border font-semibold text-text min-w-[160px] max-w-[160px] md:min-w-[240px] md:max-w-[240px] sticky left-0 z-30 bg-surface shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Product Variant</th>
+                <th className="p-3 border-b border-r border-border font-semibold text-text min-w-[70px] md:min-w-[80px] md:sticky md:left-[240px] z-30 bg-surface text-center">Stock</th>
                 {days.map(d => (
                   <th key={d} className="p-2 border-b border-border font-medium text-muted text-center min-w-[36px] bg-black/[0.01]">
                     {d}
                   </th>
                 ))}
-                <th style={{ minWidth: '80px', maxWidth: '80px', right: 0 }} className="p-3 border-b border-l border-border font-semibold text-accent sticky z-20 bg-surface shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)] text-center">Total</th>
+                <th className="p-3 border-b border-l border-border font-semibold text-accent min-w-[70px] md:min-w-[80px] md:sticky md:right-0 z-20 bg-surface shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)] text-center">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -156,11 +156,11 @@ export default function Ledger() {
                 <>
                   {ledgerData.map((row) => (
                     <tr key={row.id} className="hover:bg-black/[0.02] border-b border-border last:border-0 group transition-colors">
-                      <td style={{ minWidth: '240px', maxWidth: '240px', left: 0 }} className="p-2.5 border-r border-border sticky z-10 bg-surface group-hover:bg-[#FDFCFB] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)]">
+                      <td className="p-2.5 border-r border-border min-w-[160px] max-w-[160px] md:min-w-[240px] md:max-w-[240px] sticky left-0 z-10 bg-surface group-hover:bg-[#FDFCFB] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)]">
                         <div className="font-medium text-text truncate w-full" title={row.fullName}>{row.fullName}</div>
                         <div className="text-[10px] text-muted tracking-wide truncate w-full" title={row.sku}>{row.sku}</div>
                       </td>
-                      <td style={{ minWidth: '80px', maxWidth: '80px', left: '240px' }} className="p-2.5 border-r border-border sticky z-10 bg-surface group-hover:bg-[#FDFCFB] text-center">
+                      <td className="p-2.5 border-r border-border min-w-[70px] md:min-w-[80px] md:sticky md:left-[240px] z-10 bg-surface group-hover:bg-[#FDFCFB] text-center">
                         <span className={`font-semibold ${row.currentStock <= 5 ? "text-error" : "text-success"}`}>
                           {row.currentStock}
                         </span>
@@ -173,15 +173,15 @@ export default function Ledger() {
                           </td>
                         )
                       })}
-                      <td style={{ minWidth: '80px', maxWidth: '80px', right: 0 }} className="p-2.5 border-l border-border sticky z-10 bg-surface group-hover:bg-[#FDFCFB] text-center font-bold text-accent bg-accent/[0.01]">
+                      <td className="p-2.5 border-l border-border min-w-[70px] md:min-w-[80px] md:sticky md:right-0 z-10 bg-surface group-hover:bg-[#FDFCFB] text-center font-bold text-accent bg-accent/[0.01]">
                         {row.totalSales > 0 ? row.totalSales : <span className="text-muted/20">-</span>}
                       </td>
                     </tr>
                   ))}
                   {/* Bottom Totals Row */}
                   <tr className="sticky bottom-0 z-20 bg-surface shadow-[0_-2px_5px_-2px_rgba(0,0,0,0.05)]">
-                    <td style={{ minWidth: '240px', maxWidth: '240px', left: 0 }} className="p-3 border-t-2 border-r border-border sticky z-30 bg-surface font-semibold text-text shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Daily Totals</td>
-                    <td style={{ minWidth: '80px', maxWidth: '80px', left: '240px' }} className="p-3 border-t-2 border-r border-border sticky z-30 bg-surface text-center text-muted text-xs font-medium">All</td>
+                    <td className="p-3 border-t-2 border-r border-border min-w-[160px] max-w-[160px] md:min-w-[240px] md:max-w-[240px] sticky left-0 z-30 bg-surface font-semibold text-text shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Daily Totals</td>
+                    <td className="p-3 border-t-2 border-r border-border min-w-[70px] md:min-w-[80px] md:sticky md:left-[240px] z-30 bg-surface text-center text-muted text-xs font-medium">All</td>
                     {days.map(d => {
                        const val = dailyTotals.daily[d]
                        return (
@@ -190,7 +190,7 @@ export default function Ledger() {
                          </td>
                        )
                     })}
-                    <td style={{ minWidth: '80px', maxWidth: '80px', right: 0 }} className="p-3 border-t-2 border-l border-border sticky z-20 bg-accent text-white text-center font-bold shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                    <td className="p-3 border-t-2 border-l border-border min-w-[70px] md:min-w-[80px] md:sticky md:right-0 z-20 bg-accent text-white text-center font-bold shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                       {dailyTotals.grand}
                     </td>
                   </tr>
