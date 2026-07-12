@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react"
 import { db } from "../db/database"
 import { getAllProducts, getAllVariants } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
-import Card from "../ui/components/Card"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
