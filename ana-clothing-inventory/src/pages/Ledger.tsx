@@ -112,7 +112,7 @@ export default function Ledger() {
   }, [ledgerData, days])
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] space-y-4">
+    <div className="flex flex-col h-[calc(100dvh-120px)] space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <div>
@@ -135,7 +135,7 @@ export default function Ledger() {
       </div>
       
       {/* Table */}
-      <Card className="!p-0 overflow-hidden flex flex-col flex-1 shadow-sm border border-border/60">
+      <div className="bg-surface rounded-xl border border-border shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
         <div className="overflow-x-auto overflow-y-auto flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-max text-[13px]">
             <thead className="sticky top-0 z-20 bg-surface shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
@@ -203,7 +203,7 @@ export default function Ledger() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
