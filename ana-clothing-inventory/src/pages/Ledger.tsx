@@ -154,7 +154,7 @@ export default function Ledger() {
                  <tr><td colSpan={days.length + 3} className="p-8 text-center text-muted">No products found.</td></tr>
               ) : (
                 <>
-                  {ledgerData.map((row, idx) => (
+                  {ledgerData.map((row) => (
                     <tr key={row.id} className="hover:bg-black/[0.02] border-b border-border last:border-0 group transition-colors">
                       <td style={{ minWidth: '240px', maxWidth: '240px', left: 0 }} className="p-2.5 border-r border-border sticky z-10 bg-surface group-hover:bg-[#FDFCFB] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)]">
                         <div className="font-medium text-text truncate w-full" title={row.fullName}>{row.fullName}</div>
