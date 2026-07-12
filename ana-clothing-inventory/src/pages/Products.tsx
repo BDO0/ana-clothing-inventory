@@ -208,33 +208,82 @@ export default function Products() {
                     </div>
                   </div>
                 </div>
-                {isExpanded && d && (
-                  <div className="border-t border-border p-3 bg-black/[0.01]">
-                    {d.variants.length === 0 && <p className="text-[13px] text-muted m-0 mb-2">No variants yet.</p>}
-                    {d.variants.map((v) => {
-                      const s = d.stocks[v.id] ?? 0
-                      return (
-                        <div key={v.id} className="flex justify-between items-center p-1.5 bg-surface border border-border rounded-sm mb-1 text-[13px] group">
-                          <span>{v.size ?? "N/A"} / {v.color ?? "N/A"} <span className="text-muted text-[11px]">({v.sku ?? "no SKU"})</span></span>
-                          <div className="flex items-center gap-3">
-                            <span className={`font-semibold ${s <= 5 ? "text-error" : "text-success"}`}>{s}</span>
-                            <div className="hidden group-hover:flex items-center gap-0.5 border-l border-border pl-2">
-                              <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted hover:text-accent" onClick={() => setEditVariantForm({ id: v.id, productId: p.id, size: v.size ?? "", color: v.color ?? "", sku: v.sku ?? "" })}>
-                                <Edit2 size={12} />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="h-5 w-5 p-0 text-muted hover:text-error" onClick={() => handleDeleteVariant(v.id, p.id)}>
-                                <Trash2 size={12} />
-                              </Button>
-                            </div>
-                          </div>
+                {isExpanded && d && (() => {
+                  const sizes = Array.from(new Set(d.variants.map(v => (v.size || "N/A").trim()))).sort((a, b) => {
+                    const sizeOrder: Record<string, number> = { "XXS": 1, "XS": 2, "S": 3, "M": 4, "L": 5, "XL": 6, "XXL": 7, "2XL": 8, "3XL": 9, "4XL": 10 };
+                    const aUpper = a.toUpperCase();
+                    const bUpper = b.toUpperCase();
+                    if (sizeOrder[aUpper] && sizeOrder[bUpper]) return sizeOrder[aUpper] - sizeOrder[bUpper];
+                    if (sizeOrder[aUpper]) return -1;
+                    if (sizeOrder[bUpper]) return 1;
+                    const numA = parseFloat(a);
+                    const numB = parseFloat(b);
+                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                    return a.localeCompare(b);
+                  });
+                  const colors = Array.from(new Set(d.variants.map(v => (v.color || "N/A").trim()))).sort((a, b) => a.localeCompare(b));
+
+                  return (
+                    <div className="border-t border-border p-3 bg-black/[0.01]">
+                      {d.variants.length === 0 ? (
+                        <p className="text-[13px] text-muted m-0 mb-2">No variants yet.</p>
+                      ) : (
+                        <div className="overflow-x-auto mb-2 border border-border rounded-sm bg-surface shadow-sm">
+                          <table className="w-full text-left border-collapse min-w-max">
+                            <thead>
+                              <tr>
+                                <th className="p-2 border-b border-r border-border text-xs font-medium text-muted bg-black/[0.02] sticky left-0 z-10 min-w-[100px]">Color \ Size</th>
+                                {sizes.map(size => (
+                                  <th key={size} className="p-2 border-b border-border text-xs font-medium text-center bg-black/[0.02] min-w-[70px]">{size}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {colors.map((color, idx) => (
+                                <tr key={color} className={`hover:bg-black/[0.01] ${idx !== colors.length - 1 ? "border-b border-border" : ""}`}>
+                                  <td className="p-2 text-[13px] font-medium border-r border-border sticky left-0 bg-surface z-10">{color}</td>
+                                  {sizes.map(size => {
+                                    const variantsInCell = d.variants.filter(v => (v.color || "N/A").trim() === color && (v.size || "N/A").trim() === size);
+                                    if (variantsInCell.length === 0) return <td key={size} className="p-2 text-center text-muted text-xs align-middle bg-black/[0.01]">-</td>;
+                                    
+                                    return (
+                                      <td key={size} className="p-1.5 align-top border-l border-border/50">
+                                        <div className="flex flex-col gap-1.5">
+                                          {variantsInCell.map(variant => {
+                                            const stock = d.stocks[variant.id] ?? 0;
+                                            return (
+                                              <div key={variant.id} className="relative group p-1.5 rounded-sm bg-black/[0.03] hover:bg-black/[0.06] transition-colors overflow-hidden">
+                                                <div className="flex flex-col items-center justify-center">
+                                                  <span className={`font-semibold text-[13px] ${stock <= 5 ? "text-error" : "text-success"}`}>{stock}</span>
+                                                  <span className="text-[9px] text-muted truncate w-full max-w-[60px] text-center px-0.5" title={variant.sku}>{variant.sku || "no SKU"}</span>
+                                                </div>
+                                                <div className="absolute inset-0 bg-surface/95 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity rounded">
+                                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted hover:text-accent" onClick={() => setEditVariantForm({ id: variant.id, productId: p.id, size: variant.size ?? "", color: variant.color ?? "", sku: variant.sku ?? "" })}>
+                                                    <Edit2 size={13} />
+                                                  </Button>
+                                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted hover:text-error" onClick={() => handleDeleteVariant(variant.id, p.id)}>
+                                                    <Trash2 size={13} />
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </td>
+                                    )
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      )
-                    })}
-                    <Button variant="outline" size="sm" onClick={() => setVariantForm({ productId: p.id, size: "", color: "", sku: "" })} className="mt-2 border-dashed border-accent text-accent hover:bg-accent/5">
-                      <Plus size={12} /> Add Variant
-                    </Button>
-                  </div>
-                )}
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => setVariantForm({ productId: p.id, size: "", color: "", sku: "" })} className="mt-1 border-dashed border-accent text-accent hover:bg-accent/5">
+                        <Plus size={12} /> Add Variant
+                      </Button>
+                    </div>
+                  )
+                })()}
               </Card>
             )
           })}
