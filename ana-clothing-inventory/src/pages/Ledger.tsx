@@ -52,7 +52,8 @@ export default function Ledger() {
     const rows = []
     for (const v of variants) {
       const pName = pMap.get(v.product_id) || "Unknown"
-      const fullName = `${pName} — ${v.size || "N/A"} / ${v.color || "N/A"}`
+      const vDetails = `${v.size || "N/A"} / ${v.color || "N/A"}`
+      const fullName = `${pName} — ${vDetails}`
       
       const vSales = salesByVariant[v.id] || {}
       let totalSales = 0
@@ -68,6 +69,8 @@ export default function Ledger() {
       
       rows.push({
         id: v.id,
+        pName,
+        vDetails,
         fullName,
         sku: v.sku || "No SKU",
         currentStock,
@@ -156,9 +159,10 @@ export default function Ledger() {
                 <>
                   {ledgerData.map((row) => (
                     <tr key={row.id} className="hover:bg-black/[0.02] border-b border-border last:border-0 group transition-colors">
-                      <td className="p-2.5 border-r border-border min-w-[160px] max-w-[160px] md:min-w-[240px] md:max-w-[240px] sticky left-0 z-10 bg-surface group-hover:bg-[#FDFCFB] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)]">
-                        <div className="font-medium text-text truncate w-full" title={row.fullName}>{row.fullName}</div>
-                        <div className="text-[10px] text-muted tracking-wide truncate w-full" title={row.sku}>{row.sku}</div>
+                      <td className="p-2.5 border-r border-border min-w-[160px] max-w-[160px] md:min-w-[240px] md:max-w-[240px] sticky left-0 z-10 bg-surface group-hover:bg-[#FDFCFB] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] align-top">
+                        <div className="text-[11px] text-muted leading-tight mb-0.5 line-clamp-2 whitespace-normal break-words" title={row.pName}>{row.pName}</div>
+                        <div className="font-semibold text-[13px] text-text truncate w-full" title={row.vDetails}>{row.vDetails}</div>
+                        <div className="text-[9px] text-muted/60 tracking-wider truncate w-full mt-0.5 font-mono" title={row.sku}>{row.sku}</div>
                       </td>
                       <td className="p-2.5 border-r border-border min-w-[70px] md:min-w-[80px] md:sticky md:left-[240px] z-10 bg-surface group-hover:bg-[#FDFCFB] text-center">
                         <span className={`font-semibold ${row.currentStock <= 5 ? "text-error" : "text-success"}`}>
