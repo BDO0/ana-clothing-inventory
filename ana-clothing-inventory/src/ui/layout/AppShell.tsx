@@ -15,6 +15,7 @@ const pageTitles: Record<string, string> = {
   "/products": "Products",
   "/stock-in": "Stock In",
   "/sales": "Sales",
+  "/ledger": "Monthly Ledger",
   "/analytics": "Analytics",
   "/reports": "Reports",
   "/history": "History",
@@ -27,7 +28,7 @@ export default function AppShell({ children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-dvh bg-bg">
+    <div className="flex h-dvh overflow-hidden bg-bg">
       {/* Sidebar — hidden off-screen on mobile, slides in when open */}
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

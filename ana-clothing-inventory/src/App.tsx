@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import History from "./pages/History";
 import Returns from "./pages/Returns";
 import Adjustments from "./pages/Adjustments";
+import Ledger from "./pages/Ledger";
 import PWAInstallPrompt from "./ui/components/PWAInstallPrompt";
 
 // Only import SystemTest in development — excluded from production bundle entirely
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/sales" element={<Sales />} />
           <Route path="/returns" element={<Returns />} />
           <Route path="/adjustments" element={<Adjustments />} />
+          <Route path="/ledger" element={<Ledger />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/history" element={<History />} />

@@ -11,6 +11,7 @@ import {
   BarChart3,
   FileText,
   History,
+  CalendarDays,
 } from "lucide-react"
 
 interface SidebarProps {
@@ -44,6 +45,7 @@ const sections: { label: string; links: NavItem[] }[] = [
   {
     label: "Analysis",
     links: [
+      { to: "/ledger", icon: CalendarDays, label: "Ledger" },
       { to: "/analytics", icon: BarChart3, label: "Analytics" },
       { to: "/reports", icon: FileText, label: "Reports" },
       { to: "/history", icon: History, label: "History" },
@@ -78,22 +80,12 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
   return (
     <>
       {/* Brand — uses actual logo */}
-      <div className="px-5 pt-7 pb-6">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="ANA"
-            className="h-10 w-10 rounded-xl object-cover border border-white/10 shadow-sm"
-          />
-          <div>
-            <div className="font-serif text-[#FFFDF9] text-lg tracking-widest font-normal leading-none">
-              ANA
-            </div>
-            <div className="text-[#FFFDF9]/50 text-[9px] font-semibold tracking-[0.2em] uppercase mt-1">
-              INVENTORY
-            </div>
-          </div>
-        </div>
+      <div className="px-5 pt-7 pb-6 flex justify-center">
+        <img
+          src="/sidebar-logo.png"
+          alt="ANA Inventory"
+          className="h-16 w-auto max-w-full object-contain drop-shadow-md"
+        />
       </div>
 
       {/* Divider */}
