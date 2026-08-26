@@ -28,13 +28,14 @@ export default function Products() {
 
   async function loadProducts() {
     const all = await getAllProducts()
-    setProducts(all)
+    const sortedAll = [...all].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+    setProducts(sortedAll)
     setLoading(false)
 
     // Prefetch variant list and stock for all products to show count summaries immediately
     const initialVData: Record<string, { variants: Variant[]; stocks: Record<string, number>; total: number }> = {}
     await Promise.all(
-      all.map(async (p) => {
+      sortedAll.map(async (p) => {
         const variants = await getVariantsByProduct(p.id)
         const stocks: Record<string, number> = {}
         let total = 0
