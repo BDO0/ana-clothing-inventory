@@ -80,11 +80,11 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
   return (
     <>
       {/* Brand — uses actual logo */}
-      <div className="px-5 pt-7 pb-6 flex justify-center">
+      <div className="w-full flex justify-center pt-2 pb-2">
         <img
           src="/sidebar-logo.png"
           alt="ANA Inventory"
-          className="h-16 w-auto max-w-full object-contain drop-shadow-md"
+          className="w-full h-auto object-cover"
         />
       </div>
 
