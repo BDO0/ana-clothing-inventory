@@ -154,7 +154,7 @@ export default function Products() {
           <div><Skeleton className="h-6 w-[120px] mb-1" /><Skeleton className="h-3 w-20" /></div>
           <Skeleton className="h-8 w-[100px] rounded-md" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
           {[1,2,3,4].map(i => <Skeleton key={i} className="h-20 rounded-xxl" />)}
         </div>
       </div>
@@ -179,12 +179,12 @@ export default function Products() {
       )}
 
       {products.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
           {products.map((p) => {
             const d = vData[p.id]
             const isExpanded = expanded.has(p.id)
             return (
-              <Card key={p.id} className="!p-0 overflow-hidden">
+              <Card key={p.id} className="!p-0 overflow-hidden self-start">
                 <div onClick={() => toggleExpand(p.id)} className="p-3.5 cursor-pointer flex items-center justify-between select-none hover:bg-black/[0.02] transition-colors">
                   <div className="flex items-center gap-1.5">
                     {isExpanded ? <ChevronDown size={14} className="text-muted" /> : <ChevronRight size={14} className="text-muted" />}
