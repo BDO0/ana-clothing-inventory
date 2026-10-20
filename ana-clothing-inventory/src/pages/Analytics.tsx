@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { colors } from "../ui/tokens"
-import { Package, Layers, PackageCheck, AlertTriangle, AlertCircle, Eye } from "lucide-react"
 
 type TrendRange = "7d" | "30d"
 
@@ -78,25 +77,21 @@ export default function Analytics() {
           <StatCard
             label="Total Products"
             value={stockSummary.totalProducts}
-            icon={Package}
             accent="accent"
           />
           <StatCard
             label="Total Variants"
             value={stockSummary.totalVariants}
-            icon={Layers}
             accent="accent"
           />
           <StatCard
             label="Total Stock Units"
             value={stockSummary.totalStock}
-            icon={PackageCheck}
             accent="success"
           />
           <StatCard
             label="Low Stock Items"
             value={stockSummary.lowStockItems}
-            icon={AlertTriangle}
             accent={stockSummary.lowStockItems > 0 ? "warning" : "muted"}
             warn={stockSummary.lowStockItems > 0}
             description={stockSummary.lowStockItems > 0 ? "Items need reordering" : "Stock level is stable"}
@@ -104,7 +99,6 @@ export default function Analytics() {
           <StatCard
             label="Out of Stock Items"
             value={stockSummary.outOfStockItems}
-            icon={AlertCircle}
             accent={stockSummary.outOfStockItems > 0 ? "error" : "muted"}
             warn={stockSummary.outOfStockItems > 0}
             description={stockSummary.outOfStockItems > 0 ? "Replenish immediately" : "All variants active"}
@@ -112,7 +106,6 @@ export default function Analytics() {
           <StatCard
             label="Low Stock Threshold"
             value={stockSummary.lowStockThreshold}
-            icon={Eye}
             accent="muted"
             description="Alert limit trigger value"
           />
