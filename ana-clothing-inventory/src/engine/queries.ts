@@ -13,6 +13,14 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 /**
+ * Get all products, sorted alphabetically by name.
+ */
+export async function getAllProductsAlphabetical(): Promise<Product[]> {
+  const products = await db.products.toArray();
+  return products.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+}
+
+/**
  * Get a single product by ID.
  */
 export async function getProductById(id: string): Promise<Product | undefined> {
@@ -27,12 +35,17 @@ export async function getAllVariants(): Promise<Variant[]> {
 }
 
 /**
- * Get all variants for a specific product.
+ * Get all variants for a specific product, sorted alphabetically/naturally by size, color, and SKU.
  */
 export async function getVariantsByProduct(
   product_id: string
 ): Promise<Variant[]> {
-  return db.variants.where("product_id").equals(product_id).toArray();
+  const variants = await db.variants.where("product_id").equals(product_id).toArray();
+  return variants.sort((a, b) => {
+    const keyA = `${a.size || ""} ${a.color || ""} ${a.sku || ""}`.trim();
+    const keyB = `${b.size || ""} ${b.color || ""} ${b.sku || ""}`.trim();
+    return keyA.localeCompare(keyB, undefined, { numeric: true, sensitivity: "base" });
+  });
 }
 
 /**

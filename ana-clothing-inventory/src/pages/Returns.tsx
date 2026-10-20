@@ -1,7 +1,7 @@
 // Returns — record customer returns (restocks inventory)
 import { useEffect, useState } from "react"
 import { Undo2 } from "lucide-react"
-import { getAllProducts, getVariantsByProduct } from "../engine/queries"
+import { getAllProductsAlphabetical, getVariantsByProduct } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { recordReturn } from "../engine/inventory-service"
 import { onSyncPulled } from "../sync/sync-events"
@@ -26,9 +26,9 @@ export default function Returns() {
   const [loading, setLoading] = useState(true)
   const [errors, setErrors] = useState<{ qty?: string; variant?: string }>({})
 
-  useEffect(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }, [])
+  useEffect(() => { getAllProductsAlphabetical().then((all) => { setProducts(all); setLoading(false) }) }, [])
   // Re-load whenever the sync engine pulls remote changes
-  useEffect(() => onSyncPulled(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }), [])
+  useEffect(() => onSyncPulled(() => { getAllProductsAlphabetical().then((all) => { setProducts(all); setLoading(false) }) }), [])
 
   function onProductChange(id: string) {
     setPId(id); setVId(""); setCurrentStock(null); setErrors({})

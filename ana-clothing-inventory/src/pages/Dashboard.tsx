@@ -11,7 +11,6 @@ import StatCard from "../ui/components/StatCard"
 import { Skeleton } from "@/components/ui/skeleton"
 import { colors } from "../ui/tokens"
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { Package, PackageCheck, RefreshCw, AlertTriangle } from "lucide-react"
 
 const LOW_STOCK_THRESHOLD = 5
 
@@ -96,15 +95,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Greeting + health */}
+      {/* Greeting + sync status */}
       <div>
         <h2 className="text-xl font-semibold text-text tracking-tight m-0">
           {getGreeting()}.
         </h2>
         <p className="mt-1 text-[13px] text-muted m-0">
-          {data.lowStockCount === 0
-            ? "Inventory healthy"
-            : `${data.lowStockCount} low stock item${data.lowStockCount !== 1 ? "s" : ""}`}
+          Inventory overview
           <span className={[
             "ml-2",
             !data.metrics.isOnline ? "text-error" : !data.metrics.isConfigured ? "text-muted" : "text-success"
@@ -119,44 +116,21 @@ export default function Dashboard() {
         <StatCard
           label="Total Products"
           value={data.totalProducts}
-          icon={Package}
           accent="accent"
         />
         <StatCard
           label="Total Stock Units"
           value={data.totalStock}
-          icon={PackageCheck}
           accent="success"
         />
         <StatCard
           label="Pending Sync"
           value={data.metrics.retryQueueSize}
-          icon={RefreshCw}
           accent={data.metrics.retryQueueSize > 0 ? "warning" : "muted"}
           description={data.metrics.isOnline ? "Database online" : "Database offline"}
           warn={data.metrics.retryQueueSize > 0}
         />
       </div>
-
-      {/* Low stock section - Moved up for immediate visibility */}
-      {data.lowStock.length > 0 && (
-        <Card header={`Critical Low Stock Warning (${data.lowStockCount})`} className="border-error/20 shadow-[0_0_15px_-3px_rgba(197,48,48,0.1)]">
-          <div className="flex flex-col gap-2.5">
-            {data.lowStock.slice(0, 5).map((item: any) => (
-              <div key={item.variant.id} className="flex justify-between items-center text-[13px] text-text py-2 px-3.5 bg-[#C53030]/[0.02] border border-[#C53030]/[0.08] rounded-xl hover:bg-[#C53030]/[0.04] transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <AlertTriangle size={14} className="text-error flex-shrink-0" />
-                  <span className="font-semibold text-text">{item.product.name}</span>
-                  <span className="text-muted text-xs">({item.variant.size ?? "N/A"} / {item.variant.color ?? "N/A"})</span>
-                </div>
-                <span className="text-error font-bold bg-[#C53030]/[0.08] px-2.5 py-0.5 rounded-full text-xs">
-                  {item.stock} units
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {/* Two-column grid - Independent heights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">

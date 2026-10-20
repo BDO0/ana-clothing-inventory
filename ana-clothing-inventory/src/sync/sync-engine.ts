@@ -25,6 +25,7 @@ import {
   type SyncConfig,
 } from "./supabase-client";
 import { dispatchSyncPulled } from "./sync-events";
+import { setSyncConfig } from "./sync-monitor";
 import { logger } from "../lib/logger";
 
 const MIN_SYNC_INTERVAL_MS = 3_000; // throttle for periodic syncs: 3 seconds
@@ -70,6 +71,9 @@ export class SyncEngine {
       SyncEngine.instance.config = { ...SyncEngine.instance.config, ...config };
       SyncEngine.instance.rebuildClient();
     }
+    if (config?.supabaseUrl && config?.supabaseKey) {
+      setSyncConfig({ supabaseUrl: config.supabaseUrl, supabaseKey: config.supabaseKey });
+    }
     return SyncEngine.instance;
   }
 
@@ -77,6 +81,7 @@ export class SyncEngine {
     if (SyncEngine.instance) {
       SyncEngine.instance.stop();
       SyncEngine.instance = null;
+      setSyncConfig(null);
     }
   }
 

@@ -1,7 +1,7 @@
 // Sales — step-flow form with low-stock warnings using shadcn components
 import { useEffect, useState } from "react"
 import { AlertTriangle, ShoppingCart, ScanLine } from "lucide-react"
-import { getAllProducts, getVariantsByProduct, getAllVariants } from "../engine/queries"
+import { getAllProductsAlphabetical, getVariantsByProduct, getAllVariants } from "../engine/queries"
 import { getStock } from "../engine/stock-engine"
 import { recordSale } from "../engine/inventory-service"
 import { onSyncPulled } from "../sync/sync-events"
@@ -31,11 +31,11 @@ export default function Sales() {
 
   useEffect(() => { getAllVariants().then(setAllVariants) }, [])
 
-  useEffect(() => { getAllProducts().then((all) => { setProducts(all); setLoading(false) }) }, [])
+  useEffect(() => { getAllProductsAlphabetical().then((all) => { setProducts(all); setLoading(false) }) }, [])
 
   // Re-load product list whenever the sync engine pulls remote changes
   useEffect(() => onSyncPulled(() => {
-    getAllProducts().then((all) => { setProducts(all); setLoading(false) })
+    getAllProductsAlphabetical().then((all) => { setProducts(all); setLoading(false) })
     getAllVariants().then(setAllVariants)
   }), [])
 

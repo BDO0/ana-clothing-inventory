@@ -12,7 +12,7 @@ import Card from "../ui/components/Card"
 import StatCard from "../ui/components/StatCard"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Package, PackageCheck, AlertTriangle, AlertCircle, ShoppingBag, TrendingUp, Download } from "lucide-react"
+import { Download } from "lucide-react"
 
 type ReportTab = "inventory" | "sales" | "overview"
 
@@ -123,12 +123,12 @@ export default function Reports() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <StatCard label="Total Products" value={overview.products.total} icon={Package} accent="accent" />
-            <StatCard label="Total Stock" value={overview.stock.total} icon={PackageCheck} accent="success" />
-            <StatCard label="Low Stock Items" value={overview.stock.lowStock} icon={AlertTriangle} accent="warning" warn={overview.stock.lowStock > 0} description={overview.stock.lowStock > 0 ? "Items need replenishment" : "All levels stable"} />
-            <StatCard label="Out of Stock" value={overview.stock.outOfStock} icon={AlertCircle} accent="error" warn={overview.stock.outOfStock > 0} description={overview.stock.outOfStock > 0 ? "Critical shortage" : "All active"} />
-            <StatCard label="Recent Sales (50)" value={overview.sales.recentSales} icon={ShoppingBag} accent="accent" />
-            <StatCard label="Total Sales Qty" value={overview.sales.totalEvents} icon={TrendingUp} accent="success" />
+            <StatCard label="Total Products" value={overview.products.total} accent="accent" />
+            <StatCard label="Total Stock" value={overview.stock.total} accent="success" />
+            <StatCard label="Low Stock Items" value={overview.stock.lowStock} accent="warning" warn={overview.stock.lowStock > 0} description={overview.stock.lowStock > 0 ? "Items need replenishment" : "All levels stable"} />
+            <StatCard label="Out of Stock" value={overview.stock.outOfStock} accent="error" warn={overview.stock.outOfStock > 0} description={overview.stock.outOfStock > 0 ? "Critical shortage" : "All active"} />
+            <StatCard label="Recent Sales (50)" value={overview.sales.recentSales} accent="accent" />
+            <StatCard label="Total Sales Qty" value={overview.sales.totalEvents} accent="success" />
           </div>
         </div>
       )}

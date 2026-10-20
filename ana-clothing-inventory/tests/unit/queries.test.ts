@@ -4,6 +4,7 @@ import { createProduct, createVariant } from "../../src/engine/product-service";
 import { stockIn } from "../../src/engine/inventory-service";
 import {
   getAllProducts,
+  getAllProductsAlphabetical,
   getProductById,
   getAllVariants,
   getVariantsByProduct,
@@ -32,6 +33,24 @@ describe("queries — getAllProducts", () => {
     // Most recent first
     expect(products[0].name).toBe("Beta");
     expect(products[1].name).toBe("Alpha");
+  });
+});
+
+describe("queries — getAllProductsAlphabetical", () => {
+  beforeEach(async () => {
+    await resetDatabase();
+  });
+
+  it("should return all products sorted alphabetically by name", async () => {
+    await createProduct({ name: "Zebra" });
+    await createProduct({ name: "Apple" });
+    await createProduct({ name: "Mango" });
+
+    const products = await getAllProductsAlphabetical();
+    expect(products).toHaveLength(3);
+    expect(products[0].name).toBe("Apple");
+    expect(products[1].name).toBe("Mango");
+    expect(products[2].name).toBe("Zebra");
   });
 });
 

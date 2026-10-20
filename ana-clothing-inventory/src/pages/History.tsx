@@ -9,7 +9,7 @@ import {
   type SortingState,
   type ColumnDef,
 } from "@tanstack/react-table"
-import { getAllProducts, getVariantsByProduct, getAllVariants, getRecentEvents } from "../engine/queries"
+import { getAllProductsAlphabetical, getVariantsByProduct, getAllVariants, getRecentEvents } from "../engine/queries"
 import { getEventHistory } from "../engine/stock-engine"
 import { db } from "../db/database"
 import { onSyncPulled } from "../sync/sync-events"
@@ -36,7 +36,7 @@ export default function History() {
     async function init() {
       setLoading(true)
       const [allProducts, allVariants] = await Promise.all([
-        getAllProducts(),
+        getAllProductsAlphabetical(),
         getAllVariants(),
       ])
       setProducts(allProducts)
@@ -236,10 +236,10 @@ export default function History() {
             <label className="block mb-1.5 font-semibold text-[11px] text-muted uppercase tracking-wider">Type</label>
             <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="flex h-9 w-full rounded-md border border-border bg-surface px-3 py-1 text-sm text-text shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent">
               <option value="">All Types</option>
-              <option value="STOCK_IN">Stock In</option>
-              <option value="SALE">Sale</option>
-              <option value="RETURN">Return</option>
               <option value="ADJUSTMENT">Adjustment</option>
+              <option value="RETURN">Return</option>
+              <option value="SALE">Sale</option>
+              <option value="STOCK_IN">Stock In</option>
             </select>
           </div>
         </div>

@@ -83,7 +83,20 @@ function getConfig(): {
   supabaseUrl?: string;
   supabaseKey?: string;
 } | null {
-  return _configRef;
+  if (_configRef?.supabaseUrl && _configRef?.supabaseKey) {
+    return _configRef;
+  }
+  if (
+    typeof import.meta !== "undefined" &&
+    import.meta.env?.VITE_SUPABASE_URL &&
+    import.meta.env?.VITE_SUPABASE_KEY
+  ) {
+    return {
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      supabaseKey: import.meta.env.VITE_SUPABASE_KEY,
+    };
+  }
+  return null;
 }
 
 /**
